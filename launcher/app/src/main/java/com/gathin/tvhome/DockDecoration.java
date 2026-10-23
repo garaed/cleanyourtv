@@ -26,6 +26,18 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
     private final boolean lightGlass;
     /** Padding all round the tiles equal to the gap between them (config.xml dock_even_padding). */
     private final boolean evenPadding;
+    /** A theme's neon_color: the band's edge in that colour with a soft glow round it; 0 keeps the plain edge. */
+    private int neonRgb;
+    private final Paint neonGlow = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    void setNeon(int argb) {
+        neonRgb = argb & 0xFFFFFF;
+        if (argb == 0) return;
+        edge.setStrokeWidth(1.5f * density);
+        edge.setColor(0xD9000000 | neonRgb);
+        neonGlow.setStyle(Paint.Style.STROKE);
+    }
+
     /** The band's top and bottom the glass gradient was made for; it is remade when they move. */
     private float shaderTop = Float.NaN, shaderBottom = Float.NaN;
 
@@ -127,6 +139,19 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
             shaderBottom = rect.bottom;
         }
         c.drawRoundRect(rect, radius, radius, band);
+        if (neonRgb != 0) {
+            // Light spreading out from the tube: thin rings, each further out and fainter, as GlassView draws
+            // its glow. Plain strokes, no blur, so it stays cheap while the grid scrolls.
+            int rings = 10;
+            float spread = 12 * density, step = spread / rings;
+            neonGlow.setStrokeWidth(step + 0.5f);
+            for (int i = 0; i < rings; i++) {
+                float o = step * (i + 0.5f);
+                float t = 1f - (float) i / rings;
+                neonGlow.setColor(Math.round(0x60 * t * t) << 24 | neonRgb);
+                c.drawRoundRect(rect.left - o, rect.top - o, rect.right + o, rect.bottom + o, radius + o, radius + o, neonGlow);
+            }
+        }
         c.drawRoundRect(rect, radius, radius, edge);
     }
 }

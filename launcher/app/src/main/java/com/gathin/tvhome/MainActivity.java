@@ -16,6 +16,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ChangedPackages;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -29,6 +30,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
@@ -182,6 +184,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private TextView stats;
     private List<RaceWeekend.Race> raceCalendar;
     private View racePanel;
+    // Ergo fork: the weather panel (weather_panel) and its source; null when the theme leaves it off.
+    private View weatherPanelView;
+    private Weather weather;
     private TextView raceKicker, raceHeadline, raceSessions;
     /** config.xml show_stats, overridable by a theme. Off: the line is gone and nothing is read. */
     private boolean showStats;
@@ -339,6 +344,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         public void run() {
             updateGreeting();
             updateRace();
+            if (weather != null) weather.refreshIfDue();
             // The pill follows the network callbacks and each return to Home; only the diya's flame follows the
             // signal level, so only it needs this minute's binder calls (about 7 ms on the UI thread).
             if (festive) updateWifiLabel();
@@ -347,6 +353,21 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             handler.postDelayed(this, MINUTE_MS);
         }
     };
+
+    /** Ergo fork: force_locale in a theme runs Home in that language (dates, greeting, buttons), whatever the TV's. */
+    @Override
+    protected void attachBaseContext(Context base) {
+        String tag = Config.forcedLocale(base);
+        if (!tag.isEmpty()) {
+            Locale locale = Locale.forLanguageTag(tag);
+            // TextClock formats month and day names with the default locale, not the context's.
+            Locale.setDefault(locale);
+            Configuration conf = new Configuration(base.getResources().getConfiguration());
+            conf.setLocale(locale);
+            base = base.createConfigurationContext(conf);
+        }
+        super.attachBaseContext(base);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -511,7 +532,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             public void onChildViewDetachedFromWindow(@NonNull View v) {
             }
         });
-        if (dockRow) grid.addItemDecoration(new DockDecoration(COLUMNS, density, cinematic, cfg.alwaysShowNames, cfg.dockOpacity, cfg.dockGlass, cfg.dockEvenPadding));
+        if (dockRow) {
+            DockDecoration dock = new DockDecoration(COLUMNS, density, cinematic, cfg.alwaysShowNames, cfg.dockOpacity, cfg.dockGlass, cfg.dockEvenPadding);
+            dock.setNeon(cfg.neonColor);
+            grid.addItemDecoration(dock);
+        }
         if (cfg.fadeRows) TopFade.attach(grid, 48 * density);
         // Reduced motion: the tiles are simply there, with no entrance (reloadApps skips it there too).
         if (animations && !reducedMotion) {
@@ -557,6 +582,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
+                // Ergo fork: the weather panel fades as the rows scroll up under it.
+                if (weatherPanelView != null) {
+                    float off = rv.computeVerticalScrollOffset();
+                    weatherPanelView.setAlpha(Math.max(0f, 1f - off / (80 * density)));
+                }
                 if (!glassShown) return;
                 glassTargetY -= dy;
                 glassScrollShift -= dy;
@@ -717,6 +747,99 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         // Not after recreate(): the launch intent survives it and would open the settings again.
         if (savedInstanceState == null && !openLauncherSettingsIfAsked(getIntent())) openInputsIfAsked(getIntent());
+        applyErgoExtras(cfg);
+    }
+
+    // ---- Ergo fork: neon accent, large clock, weather panel ----------------------------------------------
+
+    /** Theme keys neon_color, clock_size and weather_panel; each does nothing unless a theme sets it. */
+    private void applyErgoExtras(Config cfg) {
+        TextView clock = findViewById(R.id.clock);
+        TextView ampm = findViewById(R.id.ampm);
+        if (cfg.clockSizeSp > 0) {
+            clock.setTextSize(TypedValue.COMPLEX_UNIT_SP, cfg.clockSizeSp);
+            // A large clock: the date goes under it instead of beside it, so the header stays narrow.
+            if (clock.getParent() instanceof LinearLayout) {
+                LinearLayout row = (LinearLayout) clock.getParent();
+                row.setOrientation(LinearLayout.VERTICAL);
+                ampm.setVisibility(View.GONE);
+                for (int i = 0; i < row.getChildCount(); i++) {
+                    View child = row.getChildAt(i);
+                    if (child == clock || child == ampm) continue;
+                    if (!(child instanceof LinearLayout)) {
+                        child.setVisibility(View.GONE);   // the thin divider between clock and date
+                        continue;
+                    }
+                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    lp.topMargin = (int) (6 * density);
+                    lp.leftMargin = (int) (4 * density);
+                    child.setLayoutParams(lp);
+                }
+            }
+            // The buttons keep to the top instead of following the taller clock down.
+            View buttons = findViewById(R.id.topButtons);
+            if (!topMenu && buttons.getLayoutParams() instanceof RelativeLayout.LayoutParams) {
+                RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) buttons.getLayoutParams();
+                lp.removeRule(RelativeLayout.ALIGN_BOTTOM);
+                lp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+                lp.topMargin = (int) (24 * density);
+                lp.bottomMargin = 0;
+                buttons.setLayoutParams(lp);
+            }
+        }
+        int neon = cfg.neonColor;
+        if (neon != 0) {
+            int rgb = neon & 0xFFFFFF;
+            // The tube's core is the colour lifted towards white; the glow round it is the colour itself.
+            int r = (((rgb >> 16) & 0xFF) + 255) / 2, g = (((rgb >> 8) & 0xFF) + 255) / 2, b = ((rgb & 0xFF) + 255) / 2;
+            clock.setTextColor(0xFF000000 | (r << 16) | (g << 8) | b);
+            clock.setShadowLayer(14 * density, 0, 0, 0xFF000000 | rgb);
+            glass.setBaseAccent(neon);
+            for (int id : new int[]{R.id.btnInputs, R.id.btnWifi, R.id.btnSettings, R.id.btnReorder, R.id.btnLibraryTop}) {
+                View v = findViewById(id);
+                if (v == null) continue;
+                GradientDrawable rim = new GradientDrawable();
+                rim.setShape(GradientDrawable.RECTANGLE);
+                rim.setCornerRadius(21 * density);
+                rim.setColor(0);
+                rim.setStroke(Math.max(1, Math.round(1.5f * density)), 0xB3000000 | rgb);
+                Drawable bg = v.getBackground();
+                v.setBackground(bg == null ? rim : new LayerDrawable(new Drawable[]{bg, rim}));
+            }
+        }
+        weatherPanelView = findViewById(R.id.weatherPanel);
+        if (!cfg.weatherPanel || weatherPanelView == null) {
+            weatherPanelView = null;
+            return;
+        }
+        if (neon != 0) {
+            ((WeatherIconView) findViewById(R.id.weatherIcon)).setColor(neon);
+            findViewById(R.id.weatherRule).setBackgroundColor(0x99000000 | (neon & 0xFFFFFF));
+        }
+        final String place = cfg.weatherPlace;
+        weather = new Weather(this, cfg.weatherLatitude, cfg.weatherLongitude, report -> showWeather(report, place));
+        Weather.Report cached = weather.cached();
+        if (cached != null) showWeather(cached, place);
+    }
+
+    private void showWeather(Weather.Report w, String place) {
+        if (weatherPanelView == null || isDestroyed()) return;
+        ((WeatherIconView) findViewById(R.id.weatherIcon)).setCode(w.code);
+        ((TextView) findViewById(R.id.weatherTemp)).setText(Weather.degrees(w.temperature));
+        String line = Weather.condition(w.code) + ", feels like " + Weather.degrees(w.feelsLike);
+        ((TextView) findViewById(R.id.weatherLine)).setText(place.isEmpty() ? line : place + "  \u00B7  " + line);
+        android.text.SpannableStringBuilder days = new android.text.SpannableStringBuilder();
+        for (int i = 0; i < w.days.length; i++) {
+            if (w.days[i] == null) continue;
+            if (days.length() > 0) days.append("     ");
+            int start = days.length();
+            days.append(w.days[i]);
+            days.setSpan(new ForegroundColorSpan(0x99FFFFFF), start, days.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            days.append("  ").append(Weather.degrees(w.dayMax[i]));
+        }
+        ((TextView) findViewById(R.id.weatherDays)).setText(days);
+        weatherPanelView.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -842,6 +965,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (openLiveTvAfterBoot()) return;
         updateGreeting();
         updateRace();
+        if (weather != null) weather.refreshIfDue();
         // The network and Inputs pills keep their state while Home is in the background, and callbacks update them
         // when the network or the inputs change, so this refresh only catches anything missed. Its binder calls
         // (about 7 ms on a TCL C755, most of it WifiManager.getConnectionInfo) would hold up the first frame back

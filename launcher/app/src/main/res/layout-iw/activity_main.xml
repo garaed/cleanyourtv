@@ -384,6 +384,74 @@
         </FrameLayout>
     </LinearLayout>
 
+    <!-- Ergo fork: the weather panel (theme key weather_panel), right-aligned under the top buttons. Text set
+         by MainActivity from Weather; hidden unless a theme turns it on. -->
+    <LinearLayout
+        android:id="@+id/weatherPanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:layout_marginTop="104dp"
+        android:layout_marginEnd="60dp"
+        android:gravity="right"
+        android:orientation="vertical"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        android:visibility="gone">
+
+        <View
+            android:id="@+id/weatherRule"
+            android:layout_width="300dp"
+            android:layout_height="1dp"
+            android:layout_marginBottom="16dp"
+            android:background="#99F050F8" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.gathin.tvhome.WeatherIconView
+                android:id="@+id/weatherIcon"
+                android:layout_width="76dp"
+                android:layout_height="76dp"
+                android:layout_marginEnd="14dp" />
+
+            <TextView
+                android:id="@+id/weatherTemp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textColor="#FFFFFFFF"
+                android:textSize="64sp"
+                android:fontFamily="@string/font_light"
+                android:letterSpacing="-0.02"
+                android:includeFontPadding="false" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/weatherLine"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:singleLine="true"
+            android:textColor="#C8E6DCEB"
+            android:textSize="15sp"
+            android:fontFamily="@string/font_regular" />
+
+        <TextView
+            android:id="@+id/weatherDays"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:singleLine="true"
+            android:textColor="#E6FFFFFF"
+            android:textSize="16sp"
+            android:fontFamily="@string/font_regular"
+            android:letterSpacing="0.04" />
+    </LinearLayout>
+
     <!-- The single floating glass highlight that springs between tiles. -->
     <com.gathin.tvhome.GlassView
         android:id="@+id/glass"

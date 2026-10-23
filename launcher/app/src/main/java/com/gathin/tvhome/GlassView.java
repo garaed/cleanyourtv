@@ -41,15 +41,25 @@ public class GlassView extends View {
         setLayerType(LAYER_TYPE_HARDWARE, null);
     }
 
-    /** Tints the rim and the outer glow; 0 restores the plain white glass. */
+    /** The colour 0 falls back to: a theme's neon_color, or 0 for the plain white glass. */
+    private int baseAccent;
+
+    /** A theme's neon: every reset to plain glass (setAccent(0)) lands on this colour instead. */
+    void setBaseAccent(int argb) {
+        baseAccent = argb;
+        setAccent(0);
+    }
+
+    /** Tints the rim and the outer glow; 0 restores the plain white glass, or the theme's neon. */
     void setAccent(int argb) {
+        if (argb == 0) argb = baseAccent;
         if (argb == 0) {
             glowRgb = 0xFFFFFF;
             glowAlpha = 0x30;
             rim.setColor(0xCCFFFFFF);
         } else {
             glowRgb = argb & 0xFFFFFF;
-            glowAlpha = 0x70;
+            glowAlpha = argb == baseAccent ? 0xB0 : 0x70;
             // The rim is the accent lifted towards white, so the edge still reads as glass, not paint.
             int r = (((glowRgb >> 16) & 0xFF) + 255 * 2) / 3, g = (((glowRgb >> 8) & 0xFF) + 255 * 2) / 3,
                     b = ((glowRgb & 0xFF) + 255 * 2) / 3;

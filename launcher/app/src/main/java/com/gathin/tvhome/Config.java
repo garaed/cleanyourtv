@@ -33,7 +33,7 @@ import java.util.Set;
  * unknown or badly typed key is ignored, so a theme can change the dock and the look without a rebuild:
  * {@code tools/theme.sh themes/<name>} pushes a theme folder there and restarts Home.
  *
- * Read once in {@link MainActivity#onCreate}; nothing here touches the network.
+ * Read once in {@link MainActivity#onCreate}; nothing here touches the network (the fork's Weather does).
  */
 final class Config {
     private static final String TAG = "TvHome.Config";
@@ -48,6 +48,42 @@ final class Config {
      * resume when it differs, however the settings were left (see MainActivity#onResume).
      */
     static final String SETTINGS_REVISION_KEY = "settings_revision";
+
+    // ---- Ergo fork extras: theme-only keys, every one off unless a theme sets it -------------------------
+
+    /** Neon accent (neon_color, #RRGGBB) for the clock, the dock's outline, the focus ring and the pills; 0 is off. */
+    int neonColor;
+    /** Size of Home's clock in sp (clock_size, 40 to 160); 0 keeps the layout's own size. */
+    int clockSizeSp;
+    /** Weather panel under the top-right buttons (weather_panel), from Open-Meteo; needs INTERNET. */
+    boolean weatherPanel;
+    double weatherLatitude = Double.NaN;
+    double weatherLongitude = Double.NaN;
+    /** Name shown before the condition, e.g. "Odesa" (weather_place). */
+    String weatherPlace = "";
+
+    /**
+     * force_locale from the theme ("en"), or "" to follow the TV. Read before the activity has resources, so it
+     * reads the file itself: the pushed config.json, or the copy kept from the last start while storage mounts.
+     */
+    static String forcedLocale(Context ctx) {
+        try {
+            File dir = dir(ctx);
+            JSONObject json = Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
+                    ? read(dir != null ? new File(dir, FILE_NAME) : null) : null;
+            if (json == null) json = read(new File(ctx.getFilesDir(), FILE_NAME));
+            return json == null ? "" : string(json, "force_locale", "");
+        } catch (RuntimeException e) {
+            return "";
+        }
+    }
+
+    private static double decimal(JSONObject o, String key, double min, double max) {
+        Object v = o.opt(key);
+        if (!(v instanceof Number)) return Double.NaN;
+        double d = ((Number) v).doubleValue();
+        return d < min || d > max ? Double.NaN : d;
+    }
 
     /** True when Launcher settings changed something since Home was built at revision {@code seen}. */
     static boolean settingsChanged(long seen, long current) {
@@ -512,7 +548,7 @@ final class Config {
         Festival festival = json == null ? Festival.NONE : Festival.parse(string(json, "festival", ""),
                 string(json, "festival_until", ""), string(json, "greeting", ""), string(json, "accent_color", ""));
 
-        return new Config(dock, fillDock, hidden, libraryApps, liveTv, liveTvAction, liveTvInputId, packageMap(launchActions), packageMap(appLabels),
+        Config cfg = new Config(dock, fillDock, hidden, libraryApps, liveTv, liveTvAction, liveTvInputId, packageMap(launchActions), packageMap(appLabels),
                 packageMap(appBanners), panelService,
                 panelAction, panelExtra, coocaaSources, inputAction, inputUriScheme,
                 Math.max(1, columns), Math.max(0, rowsBelow), animations, advancedEffects,
@@ -521,6 +557,16 @@ final class Config {
                 wallpapers, rotationMinutes, wallpaperDim, dockOpacity, wallpaperOrder, applied,
                 festival, inputKeycodes, appKeys, stockHomeRedirect, json == null ? Collections.emptyList() : raceCalendar(json), cinematic, ambientGlow, appGlow, fadeRows,
                 Math.max(0, idleClockMinutes), keyFilter, dockGlass, glowStyle, wallpaperCaptions, handleViewInputs, tileMenu, dockEvenPadding, cinematicDots, cinematicWhiteFocus, wifiStatusColor, cinematicScrim, cinematicArt, wallpaperMoods, gamepadPassthrough);
+        if (json != null) {
+            cfg.neonColor = color(json, "neon_color", 0);
+            cfg.clockSizeSp = integer(json, "clock_size", 0, 40, 160);
+            cfg.weatherLatitude = decimal(json, "weather_latitude", -90, 90);
+            cfg.weatherLongitude = decimal(json, "weather_longitude", -180, 180);
+            cfg.weatherPanel = bool(json, "weather_panel", false)
+                    && !Double.isNaN(cfg.weatherLatitude) && !Double.isNaN(cfg.weatherLongitude);
+            cfg.weatherPlace = string(json, "weather_place", "");
+        }
+        return cfg;
     }
 
     /**
