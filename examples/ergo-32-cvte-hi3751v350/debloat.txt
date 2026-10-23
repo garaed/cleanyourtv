@@ -8,8 +8,10 @@
 # A clean firmware: no ad or content-row services, so this is a short list of phone leftovers.
 # ADB: no Developer options and no stock Android Settings app. Switch to a source (HDMI/AV), press
 # MENU then 1 1 4 7: CVTE factory menu > Debug > ADB ENABLE > ON, nothing else in that menu.
-# Stock launcher: com.cvte.tv.launcher.barnard (CVTE board): left ENABLED, the new launcher is made Home
-# with set-home-activity (launcher/build-and-install.sh with STOCK_LAUNCHER=none), then one reboot.
+# Stock launcher: com.cvte.tv.launcher.barnard (CVTE board): left ENABLED. Disabled, it is back on after the
+# next boot. The new launcher's Home choice survives a reboot, but CVTE's "memory boot"
+# (ro.cvte.memory.boot.launcher=1) starts Barnard by name at every boot. config.json sets
+# stock_home_redirect to Barnard, so HomeKeyService (HOME_KEY_SERVICE=1) sends it straight back to the new Home.
 # Inputs: the TV has no TvInputManager inputs; the source picker is com.cvte.tv.setting's
 # .extra.TvExtraActivity with action com.cvte.intent.SHOW_INPUT (see config.json). The remote has no
 # Source key, so the launcher's Inputs pill is the only way to HDMI 1/2, AV and YPbPr: keep it.

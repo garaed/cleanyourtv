@@ -12,6 +12,7 @@
   "source_panel_service": "com.cvte.tv.setting/.extra.TvExtraActivity",
   "source_panel_action": "com.cvte.intent.SHOW_INPUT",
   "live_tv_package": "",
+  "stock_home_redirect": "com.cvte.tv.launcher.barnard",
   "columns": 4,
   "rows_below_dock": 0,
   "dock_title": false,

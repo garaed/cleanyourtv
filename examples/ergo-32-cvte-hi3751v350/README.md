@@ -27,7 +27,16 @@ tools/disable.sh examples/ergo-32-cvte-hi3751v350/debloat.txt
 STOCK_LAUNCHER=none launcher/build-and-install.sh      # CVTE: Barnard stays enabled, Home moves with set-home-activity
 tools/venv/bin/python -I tools/tv.py --reboot          # once; check Home and ADB come back
 tools/theme.sh examples/ergo-32-cvte-hi3751v350
+STOCK_LAUNCHER=none HOME_KEY_SERVICE=1 launcher/build-and-install.sh
+tools/venv/bin/python -I tools/tv.py --reboot
 ```
+
+Barnard comes back at every boot: disabling it does not last (it is enabled again by the next boot), and
+CVTE's memory boot (`ro.cvte.memory.boot.launcher=1`) starts it by name, whatever Home is set to. The Home
+choice itself survives. So the theme sets `stock_home_redirect` to Barnard and HomeKeyService, enabled by
+the second install, sends its screen back to the new launcher. Enable the helper in its own pass, after the
+first reboot has shown Home and ADB come back. Hold volume up afterwards: if the volume no longer ramps, the
+helper is filtering keys on this firmware; add `"key_filter": false` to the theme, which keeps the redirect.
 
 ## Undo
 
