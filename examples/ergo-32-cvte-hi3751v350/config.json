@@ -1,0 +1,32 @@
+{
+  "dock_apps": [
+    "com.google.android.youtube.tv",
+    "net.megogo.tv.preinstall",
+    "ru.twicker.lampa",
+    "studio.scillarium.ottnavigator"
+  ],
+  "hidden_apps": [
+    "com.megogo.application",
+    "de.szalkowski.activitylauncher"
+  ],
+  "source_panel_service": "com.cvte.tv.setting/.extra.TvExtraActivity",
+  "source_panel_action": "com.cvte.intent.SHOW_INPUT",
+  "live_tv_package": "",
+  "columns": 4,
+  "rows_below_dock": 0,
+  "dock_title": false,
+  "dock_even_padding": true,
+  "dock_opacity": 85,
+  "ambient_glow": false,
+  "focus_overshoot": false,
+  "advanced_effects": false,
+  "background_color": "#070803",
+  "wallpaper": true,
+  "neon_color": "#F050F8",
+  "clock_size": 100,
+  "force_locale": "en",
+  "weather_panel": true,
+  "weather_latitude": 46.48,
+  "weather_longitude": 30.73,
+  "weather_place": "Odesa"
+}

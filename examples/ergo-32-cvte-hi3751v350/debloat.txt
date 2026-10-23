@@ -1,0 +1,37 @@
+# Ergo 32" Smart TV (CVTE board, HiSilicon Hi3751V350 "bigfish", brand HiDPT, 1 GB RAM)
+# Android 9 (userdebug), firmware 20200811_153250, 1280x720 at 160 dpi, Ukraine
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/ergo-32-cvte-hi3751v350/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/ergo-32-cvte-hi3751v350/debloat.txt
+# Everything is DISABLED, not uninstalled. Comment out any line you want to keep.
+#
+# A clean firmware: no ad or content-row services, so this is a short list of phone leftovers.
+# ADB: no Developer options and no stock Android Settings app. Switch to a source (HDMI/AV), press
+# MENU then 1 1 4 7: CVTE factory menu > Debug > ADB ENABLE > ON, nothing else in that menu.
+# Stock launcher: com.cvte.tv.launcher.barnard (CVTE board): left ENABLED, the new launcher is made Home
+# with set-home-activity (launcher/build-and-install.sh with STOCK_LAUNCHER=none), then one reboot.
+# Inputs: the TV has no TvInputManager inputs; the source picker is com.cvte.tv.setting's
+# .extra.TvExtraActivity with action com.cvte.intent.SHOW_INPUT (see config.json). The remote has no
+# Source key, so the launcher's Inputs pill is the only way to HDMI 1/2, AV and YPbPr: keep it.
+#
+# Keep: every com.hisilicon.*, com.cvte.tvservice, com.cvte.tv.api.impl, com.cvte.tv.setting (sources,
+# picture), com.cvte.tv.globalui, com.yug.tv.settings (Settings), com.cvte.tv.remotedebug (remote hotkeys,
+# which open the factory menu with the ADB switch), com.cvte.tv.ucservice (auth service for preinstalled
+# apps), the factory apps (com.cvte.fac.menu, com.cvte.factory.*, com.gaochuang.factory.at: panel
+# calibration), com.example.user.myapplication (direct-boot FallbackHome), GMS, Play, mediashell (Chromecast).
+#
+# The firmware updater is disabled on purpose (owner's choice): no updates for this 2020 firmware were
+# seen, and a pushed update would undo the launcher and this list. Comment it out to keep updates.
+
+# Firmware updater
+com.cvte.tv.systemupgrade
+
+# Phone and setup leftovers
+com.android.simappdialog                  # SIM toolkit
+com.android.bips                          # default print service
+com.android.wallpaperbackup
+com.android.sharedstoragebackup
+com.android.traceur                       # system tracing
+com.android.bluetoothmidiservice
+com.android.companiondevicemanager
+com.android.bookmarkprovider
