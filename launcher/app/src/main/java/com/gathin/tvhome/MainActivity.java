@@ -30,7 +30,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
@@ -828,20 +827,30 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (neon != 0) {
             int rgb = neon & 0xFFFFFF;
             // The tube's core is the colour lifted towards white; the glow round it is the colour itself.
-            int r = (((rgb >> 16) & 0xFF) + 255) / 2, g = (((rgb >> 8) & 0xFF) + 255) / 2, b = ((rgb & 0xFF) + 255) / 2;
-            clock.setTextColor(0xFF000000 | (r << 16) | (g << 8) | b);
-            clock.setShadowLayer(9 * density, 0, 0, 0xCC000000 | rgb);
+            // The tube: a near-white core, its colour only in the glow round it.
+            clock.setTextColor(0xFFFFF0FF);
+            clock.setShadowLayer(10 * density, 0, 0, 0xFF000000 | rgb);
             glass.setBaseAccent(neon);
+            // Pills: dark glass with a thin neon edge; focused, a near-white tube with a faint tint inside.
+            ColorStateList white = ColorStateList.valueOf(0xF2FFFFFF);
             for (int id : new int[]{R.id.btnInputs, R.id.btnWifi, R.id.btnSettings, R.id.btnReorder, R.id.btnLibraryTop}) {
                 View v = findViewById(id);
-                if (v == null) continue;
-                GradientDrawable rim = new GradientDrawable();
-                rim.setShape(GradientDrawable.RECTANGLE);
-                rim.setCornerRadius(21 * density);
-                rim.setColor(0);
-                rim.setStroke(Math.max(1, Math.round(density)), 0x80000000 | rgb);
-                Drawable bg = v.getBackground();
-                v.setBackground(bg == null ? rim : new LayerDrawable(new Drawable[]{bg, rim}));
+                if (!(v instanceof TextView)) continue;
+                GradientDrawable focusedBg = new GradientDrawable();
+                focusedBg.setCornerRadius(21 * density);
+                focusedBg.setColor(0x40000000 | rgb);
+                focusedBg.setStroke(Math.max(1, Math.round(1.5f * density)), 0xFFFFE4FF);
+                GradientDrawable plain = new GradientDrawable();
+                plain.setCornerRadius(21 * density);
+                plain.setColor(0xD90A040E);
+                plain.setStroke(Math.max(1, Math.round(density)), 0x80000000 | rgb);
+                android.graphics.drawable.StateListDrawable states = new android.graphics.drawable.StateListDrawable();
+                states.addState(new int[]{android.R.attr.state_focused}, focusedBg);
+                states.addState(new int[]{android.R.attr.state_activated}, focusedBg);
+                states.addState(new int[]{}, plain);
+                v.setBackground(states);
+                ((TextView) v).setTextColor(white);
+                ((TextView) v).setCompoundDrawableTintList(white);
             }
         }
         weatherPanelView = findViewById(R.id.weatherPanel);

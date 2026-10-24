@@ -56,4 +56,5 @@ This fork adds keys the upstream launcher ignores. Each is off unless a theme se
 | `force_locale` | language tag | Home in that language whatever the TV's (`en` keeps every glyph in Outfit, which has no Cyrillic) |
 | `grid_width` | 400 to 1600 | Width of the app grid in dp, centred; narrower columns pull the dock's tiles together (860 for four 180 dp tiles) |
 | `hide_rows_below` | bool | The rows under the dock (and the add-on cards in them) stay invisible until focus moves down into them |
+| `app_cards` | list of `"package=#RRGGBB"` | Tiles drawn as a flat colour with the app's name (from `app_labels` when set) instead of the app's own banner |
 | `weather_panel` | bool | A weather panel under the top-right buttons from Open-Meteo (no key), refreshed at most every 30 minutes while Home is on screen. Needs `weather_latitude` and `weather_longitude`; `weather_place` names the place. Adds the `INTERNET` permission, which upstream does not have |

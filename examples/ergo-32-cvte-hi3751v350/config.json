@@ -5,6 +5,18 @@
     "ru.twicker.lampa",
     "studio.scillarium.ottnavigator"
   ],
+  "app_cards": [
+    "com.google.android.youtube.tv=#C91C22",
+    "net.megogo.tv.preinstall=#1C1D22",
+    "ru.twicker.lampa=#252734",
+    "studio.scillarium.ottnavigator=#133962"
+  ],
+  "app_labels": [
+    "com.google.android.youtube.tv=YouTube",
+    "net.megogo.tv.preinstall=MEGOGO",
+    "ru.twicker.lampa=Lampa",
+    "studio.scillarium.ottnavigator=OTT Navigator"
+  ],
   "hidden_apps": [
     "com.megogo.application",
     "de.szalkowski.activitylauncher"
@@ -24,10 +36,10 @@
   "ambient_glow": false,
   "focus_overshoot": false,
   "advanced_effects": false,
-  "background_color": "#070803",
+  "background_color": "#040206",
   "wallpaper": true,
   "wallpaper_true_color": true,
-  "neon_color": "#F050F8",
+  "neon_color": "#D946EF",
   "clock_size": 100,
   "force_locale": "en",
   "weather_panel": true,

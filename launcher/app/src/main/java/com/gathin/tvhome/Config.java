@@ -66,6 +66,8 @@ final class Config {
     int gridWidthDp;
     /** The rows under the dock stay invisible until focus moves down into them (hide_rows_below). */
     boolean hideRowsBelow;
+    /** app_cards: package -> tile colour; the tile shows that colour and the app's name instead of its banner. */
+    Map<String, Integer> appCards = Collections.emptyMap();
 
     /**
      * force_locale from the theme ("en"), or "" to follow the TV. Read before the activity has resources, so it
@@ -572,6 +574,15 @@ final class Config {
             cfg.weatherPlace = string(json, "weather_place", "");
             cfg.gridWidthDp = integer(json, "grid_width", 0, 400, 1600);
             cfg.hideRowsBelow = bool(json, "hide_rows_below", false);
+            Map<String, Integer> cards = new HashMap<>();
+            for (Map.Entry<String, String> e : packageMap(stringList(json, "app_cards", Collections.emptyList())).entrySet()) {
+                try {
+                    cards.put(e.getKey(), Color.parseColor(e.getValue()));
+                } catch (IllegalArgumentException ignored) {
+                    // a colour that does not parse leaves that app's own banner
+                }
+            }
+            cfg.appCards = cards;
         }
         return cfg;
     }

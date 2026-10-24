@@ -47,6 +47,14 @@ public class GlassView extends View {
     /** A theme's neon: every reset to plain glass (setAccent(0)) lands on this colour instead. */
     void setBaseAccent(int argb) {
         baseAccent = argb;
+        // Neon: no white sheen over the tile, so its own colour shows; a near-white tube edge instead.
+        if (argb != 0) {
+            fill.setShader(null);
+            fill.setColor(0x0FFFFFFF);
+            specular.setShader(null);
+            specular.setColor(0);
+            rim.setStrokeWidth(2f * density);
+        }
         setAccent(0);
     }
 
@@ -63,7 +71,7 @@ public class GlassView extends View {
             // The rim is the accent lifted towards white, so the edge still reads as glass, not paint.
             int r = (((glowRgb >> 16) & 0xFF) + 255 * 2) / 3, g = (((glowRgb >> 8) & 0xFF) + 255 * 2) / 3,
                     b = ((glowRgb & 0xFF) + 255 * 2) / 3;
-            rim.setColor(0xE6000000 | (r << 16) | (g << 8) | b);
+            rim.setColor(argb == baseAccent ? 0xFFFFE4FF : 0xE6000000 | (r << 16) | (g << 8) | b);
         }
         invalidate();
     }
@@ -76,6 +84,7 @@ public class GlassView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
+        if (baseAccent != 0) return;   // neon keeps the flat fill set in setBaseAccent
         fill.setShader(new LinearGradient(0, 0, 0, h, 0x3DFFFFFF, 0x12FFFFFF, Shader.TileMode.CLAMP));
         specular.setShader(new LinearGradient(0, 0, 0, h * 0.45f, 0x66FFFFFF, 0x00FFFFFF, Shader.TileMode.CLAMP));
     }

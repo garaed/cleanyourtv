@@ -208,6 +208,9 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final boolean tileMenu;
     /** Tile names and bundled banners that replace the app's own (config.xml, app_labels and app_banners). */
     private final Map<String, String> appLabels, appBanners;
+    /** Ergo fork: app_cards, package -> colour of a plain named tile (TextBannerDrawable). */
+    private final Map<String, Integer> appCards;
+    private android.graphics.Typeface cardFont;
     private final List<Entry> items = new ArrayList<>();
 
     AppAdapter(Context ctx, TileListener listener, int dockSize, Config cfg) {
@@ -233,6 +236,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         this.tileMenu = cfg.tileMenu;
         this.appLabels = cfg.appLabels;
         this.appBanners = cfg.appBanners;
+        this.appCards = cfg.appCards;
         // Tiles keep their identity across reload(), so a focused tile stays on its app instead of
         // its view being rebound to whatever app now sits in that slot.
         setHasStableIds(true);
@@ -281,7 +285,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             String label = card != null ? card.label : Cards.cleanLabel(
                     appLabels.containsKey(pkg) ? appLabels.get(pkg) : String.valueOf(ri.loadLabel(pm)), pkg);
             if (!seen.add(pkg + '\n' + label)) continue;
-            Drawable banner = bundledBanner(appBanners.get(pkg));
+            Drawable banner = appCards.containsKey(pkg) ? textBanner(appCards.get(pkg), label) : null;
+            if (banner == null) banner = bundledBanner(appBanners.get(pkg));
             if (banner == null) banner = loadBanner(pm, ri);
             // The icon is only drawn (and sampled for the glow) when there is no banner, so a tile with a
             // banner skips loading and decoding it.
@@ -324,6 +329,17 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         items.clear();
         items.addAll(fresh);
         notifyDataSetChanged();
+    }
+
+    private Drawable textBanner(int color, String label) {
+        if (cardFont == null) {
+            try {
+                cardFont = ctx.getResources().getFont(R.font.outfit_medium);
+            } catch (RuntimeException e) {
+                cardFont = android.graphics.Typeface.DEFAULT_BOLD;
+            }
+        }
+        return new TextBannerDrawable(color, label, cardFont);
     }
 
     /** A banner_* drawable bundled with the launcher, or null for none or a name that is not one. */
