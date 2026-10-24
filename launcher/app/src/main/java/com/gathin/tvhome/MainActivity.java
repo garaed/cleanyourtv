@@ -864,10 +864,20 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 ViewGroup.LayoutParams plp = v.getLayoutParams();
                 plp.height = Math.round(38 * density);
                 if (((TextView) v).getText().length() == 0) {
-                    // An icon-only button is a circle: as wide as it is tall, the icon centred.
-                    plp.width = plp.height;
-                    int pad = Math.round(9 * density);
-                    v.setPaddingRelative(pad, 0, pad, 0);
+                    // An icon-only button is a neon ring, drawn like the frame and the mask: a near-white tube
+                    // with a halo in the neon colour round it, on near-black. Whole pixels, so the ring stays
+                    // even on a 1x screen. The icon is centred by padding, whatever its size.
+                    int size = Math.round(44 * density), inset = Math.round(3 * density);
+                    plp.width = size;
+                    plp.height = size;
+                    v.setBackground(neonRing(rgb, inset, density));
+                    Drawable icon = ((TextView) v).getCompoundDrawablesRelative()[0];
+                    int iw = icon != null ? icon.getIntrinsicWidth() : Math.round(20 * density);
+                    int side = Math.max(0, (size - iw) / 2);
+                    v.setPaddingRelative(side, 0, side, 0);
+                    ((TextView) v).setCompoundDrawablePadding(0);
+                    ((TextView) v).setCompoundDrawableTintList(new ColorStateList(
+                            new int[][]{{android.R.attr.state_focused}, {}}, new int[]{0xFFFFFFFF, 0xFFFFD6FF}));
                 }
                 v.setLayoutParams(plp);
                 // Text-only pills; the round icon-only buttons (reorder, library) keep their icon.
@@ -891,6 +901,31 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         weather = new Weather(this, cfg.weatherLatitude, cfg.weatherLongitude, report -> showWeather(report, place));
         Weather.Report cached = weather.cached();
         if (cached != null) showWeather(cached, place);
+    }
+
+    /** A round neon button: halo ring in the neon colour, then the tube (near-white) round a dark fill. */
+    private static android.graphics.drawable.StateListDrawable neonRing(int rgb, int inset, float density) {
+        android.graphics.drawable.StateListDrawable out = new android.graphics.drawable.StateListDrawable();
+        out.addState(new int[]{android.R.attr.state_focused}, ring(rgb, true, inset, density));
+        out.addState(new int[]{android.R.attr.state_activated}, ring(rgb, true, inset, density));
+        out.addState(new int[]{}, ring(rgb, false, inset, density));
+        return out;
+    }
+
+    private static Drawable ring(int rgb, boolean focused, int inset, float density) {
+        GradientDrawable halo = new GradientDrawable();
+        halo.setShape(GradientDrawable.OVAL);
+        halo.setColor(0);
+        halo.setStroke(inset * 2, (focused ? 0x99000000 : 0x55000000) | rgb);
+        GradientDrawable tube = new GradientDrawable();
+        tube.setShape(GradientDrawable.OVAL);
+        tube.setColor(focused ? 0xFF2A0B33 : 0xF209040E);
+        tube.setStroke(Math.max(2, Math.round(2 * density)), focused ? 0xFFFFFFFF : 0xFFFFD6FF);
+        android.graphics.drawable.LayerDrawable layers =
+                new android.graphics.drawable.LayerDrawable(new Drawable[]{halo, tube});
+        layers.setLayerInset(0, inset / 2, inset / 2, inset / 2, inset / 2);
+        layers.setLayerInset(1, inset, inset, inset, inset);
+        return layers;
     }
 
     private void showWeather(Weather.Report w, String place) {
