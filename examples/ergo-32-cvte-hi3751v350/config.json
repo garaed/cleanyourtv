@@ -5,12 +5,6 @@
     "ru.twicker.lampa",
     "studio.scillarium.ottnavigator"
   ],
-  "app_cards": [
-    "com.google.android.youtube.tv=#B91C22",
-    "net.megogo.tv.preinstall=#18191E",
-    "ru.twicker.lampa=#222430",
-    "studio.scillarium.ottnavigator=#113255"
-  ],
   "app_labels": [
     "com.google.android.youtube.tv=YouTube",
     "net.megogo.tv.preinstall=MEGOGO",
@@ -47,6 +41,14 @@
   "weather_place": "Odesa",
   "dock_band": false,
   "always_show_names": true,
-  "pill_icons": false,
-  "app_card_icons": true
+  "pill_icons": true,
+  "app_banners": [
+    "com.google.android.youtube.tv=banner_ergo_youtube",
+    "net.megogo.tv.preinstall=banner_ergo_megogo",
+    "ru.twicker.lampa=banner_ergo_lampa",
+    "studio.scillarium.ottnavigator=banner_ergo_ott"
+  ],
+  "icon_only_buttons": true,
+  "icon_only_inputs": true,
+  "wifi_label_width": 0
 }

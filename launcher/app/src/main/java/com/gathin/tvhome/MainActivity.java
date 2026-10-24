@@ -839,6 +839,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             glass.setBaseAccent(neon);
             // Pills: dark glass with a thin neon edge; focused, a near-white tube on a deep violet.
             ColorStateList white = ColorStateList.valueOf(0xF2FFFFFF);
+            // Icons in the neon: the colour at rest, the near-white tube when focused.
+            ColorStateList neonTint = new ColorStateList(new int[][]{{android.R.attr.state_focused}, {}},
+                    new int[]{0xFFFFD6FF, 0xFF000000 | rgb});
             pillIcons = cfg.pillIcons;
             for (int id : new int[]{R.id.btnInputs, R.id.btnWifi, R.id.btnSettings, R.id.btnReorder, R.id.btnLibraryTop}) {
                 View v = findViewById(id);
@@ -857,9 +860,15 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 states.addState(new int[]{}, plain);
                 v.setBackground(states);
                 ((TextView) v).setTextColor(white);
-                ((TextView) v).setCompoundDrawableTintList(white);
+                ((TextView) v).setCompoundDrawableTintList(neonTint);
                 ViewGroup.LayoutParams plp = v.getLayoutParams();
                 plp.height = Math.round(38 * density);
+                if (((TextView) v).getText().length() == 0) {
+                    // An icon-only button is a circle: as wide as it is tall, the icon centred.
+                    plp.width = plp.height;
+                    int pad = Math.round(9 * density);
+                    v.setPaddingRelative(pad, 0, pad, 0);
+                }
                 v.setLayoutParams(plp);
                 // Text-only pills; the round icon-only buttons (reorder, library) keep their icon.
                 if (!pillIcons && ((TextView) v).getText().length() > 0) {

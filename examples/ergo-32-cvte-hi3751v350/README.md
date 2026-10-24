@@ -8,6 +8,7 @@ also carries the only source bar: the remote has no Source key.
 |---|---|
 | `debloat.txt` | The firmware updater and eight phone leftovers, grouped and commented |
 | `config.json` | Dock, the CVTE source picker for the Inputs pill, and the fork's neon look |
+| `launcher/.../drawable-nodpi/banner_ergo_*.webp` | Tile art for the four dock apps (from the Argon design), used through `app_banners`; with `neon_color` each gets the neon edge |
 | `wallpaper.jpg` | 1280×720 neon wallpaper, the frame's glow baked in so the TV draws no blur; `wallpaper_true_color` keeps its glow from banding |
 
 ## Turning ADB on

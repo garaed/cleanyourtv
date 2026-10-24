@@ -291,7 +291,10 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             if (!seen.add(pkg + '\n' + label)) continue;
             Drawable banner = appCards.containsKey(pkg)
                     ? textBanner(appCards.get(pkg), label, appCardIcons ? ri.loadIcon(pm) : null) : null;
-            if (banner == null) banner = bundledBanner(appBanners.get(pkg));
+            if (banner == null) {
+                banner = bundledBanner(appBanners.get(pkg));
+                if (banner != null && appCardEdge != 0) banner = new EdgedBannerDrawable(banner, appCardEdge);
+            }
             if (banner == null) banner = loadBanner(pm, ri);
             // The icon is only drawn (and sampled for the glow) when there is no banner, so a tile with a
             // banner skips loading and decoding it.
