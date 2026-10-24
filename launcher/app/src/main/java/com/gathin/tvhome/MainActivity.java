@@ -189,6 +189,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** hide_rows_below: the rows under the dock are shown only while focus is in them. */
     private boolean hideRowsBelow;
     private boolean rowsBelowShown = true;
+    /** pill_icons: false keeps the top pills text only, also when the network icon would change. */
+    private boolean pillIcons = true;
     private TextView raceKicker, raceHeadline, raceSessions;
     /** config.xml show_stats, overridable by a theme. Off: the line is gone and nothing is read. */
     private boolean showStats;
@@ -537,6 +539,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (dockRow) {
             DockDecoration dock = new DockDecoration(COLUMNS, density, cinematic, cfg.alwaysShowNames, cfg.dockOpacity, cfg.dockGlass, cfg.dockEvenPadding);
             dock.setNeon(cfg.neonColor);
+            dock.setBandVisible(cfg.dockBand);
             grid.addItemDecoration(dock);
         }
         if (cfg.fadeRows) TopFade.attach(grid, 48 * density);
@@ -827,23 +830,27 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (neon != 0) {
             int rgb = neon & 0xFFFFFF;
             // The tube's core is the colour lifted towards white; the glow round it is the colour itself.
-            // The tube: a near-white core, its colour only in the glow round it.
-            clock.setTextColor(0xFFFFF0FF);
-            clock.setShadowLayer(10 * density, 0, 0, 0xFF000000 | rgb);
+            // The tube: a near-white core, its colour only in the glow round it. Greeting and date in a pale pink.
+            clock.setTextColor(0xFFFFF5FF);
+            clock.setShadowLayer(14 * density, 0, 0, 0xFF000000 | rgb);
+            greetingColor = 0xB8F5D0FE;
+            greeting.setTextColor(greetingColor);
+            ((TextView) findViewById(R.id.date)).setTextColor(0xCCF5D0FE);
             glass.setBaseAccent(neon);
-            // Pills: dark glass with a thin neon edge; focused, a near-white tube with a faint tint inside.
+            // Pills: dark glass with a thin neon edge; focused, a near-white tube on a deep violet.
             ColorStateList white = ColorStateList.valueOf(0xF2FFFFFF);
+            pillIcons = cfg.pillIcons;
             for (int id : new int[]{R.id.btnInputs, R.id.btnWifi, R.id.btnSettings, R.id.btnReorder, R.id.btnLibraryTop}) {
                 View v = findViewById(id);
                 if (!(v instanceof TextView)) continue;
                 GradientDrawable focusedBg = new GradientDrawable();
-                focusedBg.setCornerRadius(21 * density);
-                focusedBg.setColor(0x40000000 | rgb);
-                focusedBg.setStroke(Math.max(1, Math.round(1.5f * density)), 0xFFFFE4FF);
+                focusedBg.setCornerRadius(19 * density);
+                focusedBg.setColor(0xF2160722);
+                focusedBg.setStroke(Math.max(1, Math.round(2 * density)), 0xFFFFD6FF);
                 GradientDrawable plain = new GradientDrawable();
-                plain.setCornerRadius(21 * density);
-                plain.setColor(0xD90A040E);
-                plain.setStroke(Math.max(1, Math.round(density)), 0x80000000 | rgb);
+                plain.setCornerRadius(19 * density);
+                plain.setColor(0xE609040E);
+                plain.setStroke(Math.max(1, Math.round(1.5f * density)), 0x80000000 | rgb);
                 android.graphics.drawable.StateListDrawable states = new android.graphics.drawable.StateListDrawable();
                 states.addState(new int[]{android.R.attr.state_focused}, focusedBg);
                 states.addState(new int[]{android.R.attr.state_activated}, focusedBg);
@@ -851,6 +858,15 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 v.setBackground(states);
                 ((TextView) v).setTextColor(white);
                 ((TextView) v).setCompoundDrawableTintList(white);
+                ViewGroup.LayoutParams plp = v.getLayoutParams();
+                plp.height = Math.round(38 * density);
+                v.setLayoutParams(plp);
+                // Text-only pills; the round icon-only buttons (reorder, library) keep their icon.
+                if (!pillIcons && ((TextView) v).getText().length() > 0) {
+                    ((TextView) v).setCompoundDrawablesRelative(null, null, null, null);
+                    int pad = Math.round(22 * density);
+                    v.setPaddingRelative(pad, 0, pad, 0);
+                }
             }
         }
         weatherPanelView = findViewById(R.id.weatherPanel);
@@ -2614,7 +2630,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             diya.setSteady(steady);
             diya.setFlame(flame);
         } else {
-            if (icon != wifiIcon) {
+            if (icon != wifiIcon && pillIcons) {
                 wifiIcon = icon;
                 btnWifi.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0, 0, 0);
             }

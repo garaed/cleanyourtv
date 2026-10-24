@@ -57,4 +57,7 @@ This fork adds keys the upstream launcher ignores. Each is off unless a theme se
 | `grid_width` | 400 to 1600 | Width of the app grid in dp, centred; narrower columns pull the dock's tiles together (860 for four 180 dp tiles) |
 | `hide_rows_below` | bool | The rows under the dock (and the add-on cards in them) stay invisible until focus moves down into them |
 | `app_cards` | list of `"package=#RRGGBB"` | Tiles drawn as a flat colour with the app's name (from `app_labels` when set) instead of the app's own banner |
+| `app_card_icons` | bool | The app's own icon beside its name on an `app_cards` tile (`true` by default) |
+| `dock_band` | bool | `false` draws no band behind the dock, so its tiles stand on their own (`true` by default) |
+| `pill_icons` | bool | `false` leaves the top pills as text only (`true` by default) |
 | `weather_panel` | bool | A weather panel under the top-right buttons from Open-Meteo (no key), refreshed at most every 30 minutes while Home is on screen. Needs `weather_latitude` and `weather_longitude`; `weather_place` names the place. Adds the `INTERNET` permission, which upstream does not have |

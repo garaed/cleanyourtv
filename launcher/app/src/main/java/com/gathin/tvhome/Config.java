@@ -68,6 +68,12 @@ final class Config {
     boolean hideRowsBelow;
     /** app_cards: package -> tile colour; the tile shows that colour and the app's name instead of its banner. */
     Map<String, Integer> appCards = Collections.emptyMap();
+    /** app_card_icons: the app's own icon beside its name on an app_cards tile (true by default). */
+    boolean appCardIcons = true;
+    /** dock_band: false draws no band behind the dock, so its tiles stand on their own (true by default). */
+    boolean dockBand = true;
+    /** pill_icons: false leaves the top pills as text only (true by default). */
+    boolean pillIcons = true;
 
     /**
      * force_locale from the theme ("en"), or "" to follow the TV. Read before the activity has resources, so it
@@ -583,6 +589,9 @@ final class Config {
                 }
             }
             cfg.appCards = cards;
+            cfg.appCardIcons = bool(json, "app_card_icons", true);
+            cfg.dockBand = bool(json, "dock_band", true);
+            cfg.pillIcons = bool(json, "pill_icons", true);
         }
         return cfg;
     }

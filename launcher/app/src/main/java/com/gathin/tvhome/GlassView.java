@@ -53,7 +53,7 @@ public class GlassView extends View {
             fill.setColor(0x0FFFFFFF);
             specular.setShader(null);
             specular.setColor(0);
-            rim.setStrokeWidth(2f * density);
+            rim.setStrokeWidth(2.5f * density);
         }
         setAccent(0);
     }

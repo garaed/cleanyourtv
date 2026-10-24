@@ -6,10 +6,10 @@
     "studio.scillarium.ottnavigator"
   ],
   "app_cards": [
-    "com.google.android.youtube.tv=#C91C22",
-    "net.megogo.tv.preinstall=#1C1D22",
-    "ru.twicker.lampa=#252734",
-    "studio.scillarium.ottnavigator=#133962"
+    "com.google.android.youtube.tv=#B91C22",
+    "net.megogo.tv.preinstall=#18191E",
+    "ru.twicker.lampa=#222430",
+    "studio.scillarium.ottnavigator=#113255"
   ],
   "app_labels": [
     "com.google.android.youtube.tv=YouTube",
@@ -31,8 +31,7 @@
   "grid_width": 860,
   "hide_rows_below": true,
   "dock_title": false,
-  "dock_even_padding": true,
-  "dock_opacity": 85,
+  "dock_opacity": 92,
   "ambient_glow": false,
   "focus_overshoot": false,
   "advanced_effects": false,
@@ -40,10 +39,14 @@
   "wallpaper": true,
   "wallpaper_true_color": true,
   "neon_color": "#D946EF",
-  "clock_size": 100,
+  "clock_size": 98,
   "force_locale": "en",
   "weather_panel": true,
   "weather_latitude": 46.48,
   "weather_longitude": 30.73,
-  "weather_place": "Odesa"
+  "weather_place": "Odesa",
+  "dock_band": false,
+  "always_show_names": true,
+  "pill_icons": false,
+  "app_card_icons": true
 }

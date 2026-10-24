@@ -30,6 +30,13 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
     private int neonRgb;
     private final Paint neonGlow = new Paint(Paint.ANTI_ALIAS_FLAG);
 
+    /** dock_band false: nothing is drawn, the tiles keep their spacing. */
+    private boolean bandVisible = true;
+
+    void setBandVisible(boolean visible) {
+        bandVisible = visible;
+    }
+
     void setNeon(int argb) {
         neonRgb = argb & 0xFFFFFF;
         if (argb == 0) return;
@@ -87,6 +94,7 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
 
     @Override
     public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+        if (!bandVisible) return;
         boolean any = false;
         int cardWidth = 0;
         for (int i = 0; i < parent.getChildCount(); i++) {
