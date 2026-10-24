@@ -187,6 +187,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     // Ergo fork: the weather panel (weather_panel) and its source; null when the theme leaves it off.
     private View weatherPanelView;
     private Weather weather;
+    /** hide_rows_below: the rows under the dock are shown only while focus is in them. */
+    private boolean hideRowsBelow;
+    private boolean rowsBelowShown = true;
     private TextView raceKicker, raceHeadline, raceSessions;
     /** config.xml show_stats, overridable by a theme. Off: the line is gone and nothing is read. */
     private boolean showStats;
@@ -752,8 +755,41 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     // ---- Ergo fork: neon accent, large clock, weather panel ----------------------------------------------
 
-    /** Theme keys neon_color, clock_size and weather_panel; each does nothing unless a theme sets it. */
+    /** hide_rows_below: fades the rows under the dock in when focus enters them, and out when it leaves. */
+    private void showRowsBelow(boolean show) {
+        if (show == rowsBelowShown) return;
+        rowsBelowShown = show;
+        for (int i = 0; i < grid.getChildCount(); i++) {
+            View child = grid.getChildAt(i);
+            int pos = grid.getChildAdapterPosition(child);
+            if (pos < COLUMNS) continue;
+            child.animate().cancel();
+            if (animations && !reducedMotion) child.animate().alpha(tileAlpha(pos)).setDuration(160).start();
+            else child.setAlpha(tileAlpha(pos));
+        }
+    }
+
+    /** Theme keys neon_color, clock_size, weather_panel, grid_width and hide_rows_below; each does nothing
+     *  unless a theme sets it. */
     private void applyErgoExtras(Config cfg) {
+        if (cfg.gridWidthDp > 0 && grid.getLayoutParams() instanceof FrameLayout.LayoutParams) {
+            FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) grid.getLayoutParams();
+            lp.width = Math.round(cfg.gridWidthDp * density);
+            lp.gravity = Gravity.CENTER_HORIZONTAL;
+            grid.setLayoutParams(lp);
+        }
+        hideRowsBelow = cfg.hideRowsBelow;
+        if (hideRowsBelow) {
+            rowsBelowShown = lastFocused >= COLUMNS;
+            // Back on Home the grid is scrolled to the dock again, so the rows go with it.
+            grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(@NonNull RecyclerView rv, int state) {
+                    if (state == RecyclerView.SCROLL_STATE_IDLE && rv.computeVerticalScrollOffset() == 0
+                            && lastFocused < COLUMNS) showRowsBelow(false);
+                }
+            });
+        }
         TextView clock = findViewById(R.id.clock);
         TextView ampm = findViewById(R.id.ampm);
         if (cfg.clockSizeSp > 0) {
@@ -794,7 +830,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             // The tube's core is the colour lifted towards white; the glow round it is the colour itself.
             int r = (((rgb >> 16) & 0xFF) + 255) / 2, g = (((rgb >> 8) & 0xFF) + 255) / 2, b = ((rgb & 0xFF) + 255) / 2;
             clock.setTextColor(0xFF000000 | (r << 16) | (g << 8) | b);
-            clock.setShadowLayer(14 * density, 0, 0, 0xFF000000 | rgb);
+            clock.setShadowLayer(9 * density, 0, 0, 0xCC000000 | rgb);
             glass.setBaseAccent(neon);
             for (int id : new int[]{R.id.btnInputs, R.id.btnWifi, R.id.btnSettings, R.id.btnReorder, R.id.btnLibraryTop}) {
                 View v = findViewById(id);
@@ -803,7 +839,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 rim.setShape(GradientDrawable.RECTANGLE);
                 rim.setCornerRadius(21 * density);
                 rim.setColor(0);
-                rim.setStroke(Math.max(1, Math.round(1.5f * density)), 0xB3000000 | rgb);
+                rim.setStroke(Math.max(1, Math.round(density)), 0x80000000 | rgb);
                 Drawable bg = v.getBackground();
                 v.setBackground(bg == null ? rim : new LayerDrawable(new Drawable[]{bg, rim}));
             }
@@ -1471,6 +1507,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             return pos != RecyclerView.NO_POSITION && movingKey.equals(adapter.keyAt(pos)) ? 1f : 0.45f;
         }
         if (dockEditSlot >= 0 && pos >= 0 && pos < COLUMNS && pos != dockEditSlot) return 0.45f;
+        if (hideRowsBelow && dockRow && !rowsBelowShown && pos >= COLUMNS) return 0f;
         return 1f;
     }
 
@@ -1602,6 +1639,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     @Override
     public void onTileFocused(int position, View card) {
+        if (hideRowsBelow) showRowsBelow(position >= COLUMNS);
         lastFocused = position;
         lastFocusedKey = adapter.keyAt(position);
         // Focus restored before the first layout (cold start): the tile has no size yet, and the glass

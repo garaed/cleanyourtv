@@ -8,7 +8,7 @@ also carries the only source bar: the remote has no Source key.
 |---|---|
 | `debloat.txt` | The firmware updater and eight phone leftovers, grouped and commented |
 | `config.json` | Dock, the CVTE source picker for the Inputs pill, and the fork's neon look |
-| `wallpaper.jpg` | 1280×720 neon wallpaper, the frame's glow baked in so the TV draws no blur |
+| `wallpaper.jpg` | 1280×720 neon wallpaper, the frame's glow baked in so the TV draws no blur; `wallpaper_true_color` keeps its glow from banding |
 
 ## Turning ADB on
 
@@ -36,7 +36,8 @@ CVTE's memory boot (`ro.cvte.memory.boot.launcher=1`) starts it by name, whateve
 choice itself survives. So the theme sets `stock_home_redirect` to Barnard and HomeKeyService, enabled by
 the second install, sends its screen back to the new launcher. Enable the helper in its own pass, after the
 first reboot has shown Home and ADB come back. Hold volume up afterwards: if the volume no longer ramps, the
-helper is filtering keys on this firmware; add `"key_filter": false` to the theme, which keeps the redirect.
+helper is filtering keys on this firmware. It did here, so the theme sets `"key_filter": false`: the redirect
+still works, and the Home key now shows Barnard for a moment before the new launcher comes back.
 
 ## Undo
 
@@ -53,4 +54,6 @@ This fork adds keys the upstream launcher ignores. Each is off unless a theme se
 | `neon_color` | `#RRGGBB` | Neon accent: the clock glows in it, the dock band gets a glowing outline, the focus highlight and the top pills take it |
 | `clock_size` | 40 to 160 | Home's clock in sp; the date moves under the clock and the top buttons stay at the top |
 | `force_locale` | language tag | Home in that language whatever the TV's (`en` keeps every glyph in Outfit, which has no Cyrillic) |
+| `grid_width` | 400 to 1600 | Width of the app grid in dp, centred; narrower columns pull the dock's tiles together (860 for four 180 dp tiles) |
+| `hide_rows_below` | bool | The rows under the dock (and the add-on cards in them) stay invisible until focus moves down into them |
 | `weather_panel` | bool | A weather panel under the top-right buttons from Open-Meteo (no key), refreshed at most every 30 minutes while Home is on screen. Needs `weather_latitude` and `weather_longitude`; `weather_place` names the place. Adds the `INTERNET` permission, which upstream does not have |

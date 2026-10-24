@@ -33,8 +33,8 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
     void setNeon(int argb) {
         neonRgb = argb & 0xFFFFFF;
         if (argb == 0) return;
-        edge.setStrokeWidth(1.5f * density);
-        edge.setColor(0xD9000000 | neonRgb);
+        edge.setStrokeWidth(density);
+        edge.setColor(0xA6000000 | neonRgb);
         neonGlow.setStyle(Paint.Style.STROKE);
     }
 
@@ -143,12 +143,12 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
             // Light spreading out from the tube: thin rings, each further out and fainter, as GlassView draws
             // its glow. Plain strokes, no blur, so it stays cheap while the grid scrolls.
             int rings = 10;
-            float spread = 12 * density, step = spread / rings;
+            float spread = 9 * density, step = spread / rings;
             neonGlow.setStrokeWidth(step + 0.5f);
             for (int i = 0; i < rings; i++) {
                 float o = step * (i + 0.5f);
                 float t = 1f - (float) i / rings;
-                neonGlow.setColor(Math.round(0x60 * t * t) << 24 | neonRgb);
+                neonGlow.setColor(Math.round(0x38 * t * t) << 24 | neonRgb);
                 c.drawRoundRect(rect.left - o, rect.top - o, rect.right + o, rect.bottom + o, radius + o, radius + o, neonGlow);
             }
         }

@@ -61,6 +61,11 @@ final class Config {
     double weatherLongitude = Double.NaN;
     /** Name shown before the condition, e.g. "Odesa" (weather_place). */
     String weatherPlace = "";
+    /** Width of the app grid in dp, centred (grid_width, 400 to 1600); 0 keeps the full width. Narrower columns
+     *  pull the dock's tiles together, so the band is no wider than the apps in it. */
+    int gridWidthDp;
+    /** The rows under the dock stay invisible until focus moves down into them (hide_rows_below). */
+    boolean hideRowsBelow;
 
     /**
      * force_locale from the theme ("en"), or "" to follow the TV. Read before the activity has resources, so it
@@ -565,6 +570,8 @@ final class Config {
             cfg.weatherPanel = bool(json, "weather_panel", false)
                     && !Double.isNaN(cfg.weatherLatitude) && !Double.isNaN(cfg.weatherLongitude);
             cfg.weatherPlace = string(json, "weather_place", "");
+            cfg.gridWidthDp = integer(json, "grid_width", 0, 400, 1600);
+            cfg.hideRowsBelow = bool(json, "hide_rows_below", false);
         }
         return cfg;
     }
