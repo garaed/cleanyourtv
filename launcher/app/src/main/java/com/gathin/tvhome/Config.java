@@ -77,6 +77,8 @@ final class Config {
     /** source_panel_host: "package/activity" opened first (as TV_HOME) so the source panel switches inside its
      *  picture; CVTE's picker changes the input only over its own TV window. Empty for none. */
     String sourcePanelHost = "";
+    /** cvte_sources: the Inputs menu lists the inputs from CVTE's TV API and opens each directly. */
+    boolean cvteSources;
 
     /**
      * force_locale from the theme ("en"), or "" to follow the TV. Read before the activity has resources, so it
@@ -596,6 +598,7 @@ final class Config {
             cfg.dockBand = bool(json, "dock_band", true);
             cfg.pillIcons = bool(json, "pill_icons", true);
             cfg.sourcePanelHost = string(json, "source_panel_host", "");
+            cfg.cvteSources = bool(json, "cvte_sources", false);
         }
         return cfg;
     }

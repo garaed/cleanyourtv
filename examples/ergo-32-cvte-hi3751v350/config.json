@@ -18,6 +18,7 @@
   "source_panel_service": "com.cvte.tv.setting/.extra.TvExtraActivity",
   "source_panel_action": "com.cvte.intent.SHOW_INPUT",
   "source_panel_host": "com.cvte.tv.setting/.TvSettingActivity",
+  "cvte_sources": true,
   "live_tv_package": "",
   "stock_home_redirect": "com.cvte.tv.launcher.barnard",
   "key_filter": false,

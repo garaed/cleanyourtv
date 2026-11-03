@@ -76,6 +76,9 @@
         android:allowBackup="false"
         android:localeConfig="@xml/locales_config">
 
+        <!-- Ergo fork: CVTE's TV API (cvte_sources), present only on CVTE firmware; read by reflection. -->
+        <uses-library android:name="cn.cvte.tv.api" android:required="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

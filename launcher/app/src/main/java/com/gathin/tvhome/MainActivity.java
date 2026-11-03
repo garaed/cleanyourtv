@@ -193,6 +193,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private boolean pillIcons = true;
     /** source_panel_host (Ergo fork): the TV window the source panel needs under it; null for none. */
     private ComponentName sourcePanelHost;
+    /** cvte_sources (Ergo fork): list and open inputs through CVTE's TV API. */
+    private boolean cvteSources;
     private TextView raceKicker, raceHeadline, raceSessions;
     /** config.xml show_stats, overridable by a theme. Off: the line is gone and nothing is read. */
     private boolean showStats;
@@ -784,6 +786,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         hideRowsBelow = cfg.hideRowsBelow;
         sourcePanelHost = cfg.sourcePanelHost.isEmpty() ? null : ComponentName.unflattenFromString(cfg.sourcePanelHost);
+        cvteSources = cfg.cvteSources;
+        if (cvteSources) CvteSources.connect(this);
         if (hideRowsBelow) {
             rowsBelowShown = lastFocused >= COLUMNS;
             // Back on Home the grid is scrolled to the dock again, so the rows go with it.
@@ -2943,7 +2947,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // A configured source panel and no Live TV row to offer next to it: the panel is the whole menu.
         // The BYINTEK U4 needs this, as its TvInputManager lists three HDMI ports and an AV input it doesn't have.
         List<CoocaaSources.Source> coocaa = coocaaSources ? CoocaaSources.list(this) : Collections.emptyList();
-        if (coocaa.isEmpty() && !sourcePanelService.isEmpty() && liveTvIntent() == null) {
+        List<CvteSources.Source> cvte = cvteSources ? CvteSources.list() : Collections.emptyList();
+        if (cvteSources && cvte.isEmpty()) CvteSources.connect(this);   // not up yet: try again, panel this time
+        if (coocaa.isEmpty() && cvte.isEmpty() && !sourcePanelService.isEmpty() && liveTvIntent() == null) {
             openSourcePanel();
             return;
         }
@@ -3067,6 +3073,15 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     if (!CoocaaSources.open(this, s)) {
                         Toast.makeText(this, R.string.not_available, Toast.LENGTH_SHORT).show();
                     }
+                });
+            }
+        }
+        // CVTE boards (cvte_sources): the inputs from CVTE's TV API, each opened directly.
+        if (rows.getChildCount() == 0) {
+            for (CvteSources.Source s : cvte) {
+                int icon = "HDMI".equals(s.category) ? R.drawable.ic_input : R.drawable.ic_av;
+                addInputRow(rows, popup, icon, s.label, -1, () -> {
+                    if (!CvteSources.open(this, s)) openSourcePanel();
                 });
             }
         }

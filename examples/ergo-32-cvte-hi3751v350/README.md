@@ -62,4 +62,5 @@ This fork adds keys the upstream launcher ignores. Each is off unless a theme se
 | `dock_band` | bool | `false` draws no band behind the dock, so its tiles stand on their own (`true` by default) |
 | `pill_icons` | bool | `false` leaves the top pills as text only (`true` by default) |
 | `source_panel_host` | `package/activity` | Opened first (as `TV_HOME`), with the source panel over it: CVTE's picker switches the input only inside its own TV window, and over Home it changed nothing (`com.cvte.tv.setting/.TvSettingActivity` here) |
+| `cvte_sources` | bool | The Inputs menu lists HDMI, AV and YPbPr from CVTE's TV API (shared library `cn.cvte.tv.api`, by reflection) and opens each straight on its picture, as Barnard's source bar does; the source panel stays as the fallback while the API has not answered |
 | `weather_panel` | bool | A weather panel under the top-right buttons from Open-Meteo (no key), refreshed at most every 30 minutes while Home is on screen. Needs `weather_latitude` and `weather_longitude`; `weather_place` names the place. Adds the `INTERNET` permission, which upstream does not have |
