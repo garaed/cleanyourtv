@@ -7,7 +7,7 @@ also carries the only source bar: the remote has no Source key.
 | File | What it is |
 |---|---|
 | `debloat.txt` | The firmware updater and eight phone leftovers, grouped and commented |
-| `config.json` | Dock, the CVTE source picker for the Inputs pill, and the fork's neon look |
+| `config.json` | Dock, the CVTE source picker for the Inputs pill (over CVTE's TV window), and the fork's neon look; Settings opens `com.yug.tv.settings` through the fork's settings fallback |
 | `launcher/.../drawable-nodpi/banner_ergo_*.webp` | Tile art for the four dock apps (from the Argon design), used through `app_banners`; with `neon_color` each gets the neon edge |
 | `wallpaper.jpg` | 1280×720 neon wallpaper, the frame's glow baked in so the TV draws no blur; `wallpaper_true_color` keeps its glow from banding |
 
@@ -61,4 +61,5 @@ This fork adds keys the upstream launcher ignores. Each is off unless a theme se
 | `app_card_icons` | bool | The app's own icon beside its name on an `app_cards` tile (`true` by default) |
 | `dock_band` | bool | `false` draws no band behind the dock, so its tiles stand on their own (`true` by default) |
 | `pill_icons` | bool | `false` leaves the top pills as text only (`true` by default) |
+| `source_panel_host` | `package/activity` | Opened first (as `TV_HOME`), with the source panel over it: CVTE's picker switches the input only inside its own TV window, and over Home it changed nothing (`com.cvte.tv.setting/.TvSettingActivity` here) |
 | `weather_panel` | bool | A weather panel under the top-right buttons from Open-Meteo (no key), refreshed at most every 30 minutes while Home is on screen. Needs `weather_latitude` and `weather_longitude`; `weather_place` names the place. Adds the `INTERNET` permission, which upstream does not have |

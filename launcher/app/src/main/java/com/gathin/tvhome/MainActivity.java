@@ -191,6 +191,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private boolean rowsBelowShown = true;
     /** pill_icons: false keeps the top pills text only, also when the network icon would change. */
     private boolean pillIcons = true;
+    /** source_panel_host (Ergo fork): the TV window the source panel needs under it; null for none. */
+    private ComponentName sourcePanelHost;
     private TextView raceKicker, raceHeadline, raceSessions;
     /** config.xml show_stats, overridable by a theme. Off: the line is gone and nothing is read. */
     private boolean showStats;
@@ -781,6 +783,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             grid.setLayoutParams(lp);
         }
         hideRowsBelow = cfg.hideRowsBelow;
+        sourcePanelHost = cfg.sourcePanelHost.isEmpty() ? null : ComponentName.unflattenFromString(cfg.sourcePanelHost);
         if (hideRowsBelow) {
             rowsBelowShown = lastFocused >= COLUMNS;
             // Back on Home the grid is scrolled to the dock again, so the rows go with it.
@@ -2823,6 +2826,23 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** The TV's own source-selection panel, for TVs that have no TvInputManager (TCL Android TV 9): a
      *  service, or an activity on sets whose panel is a dialog (BYINTEK U4's QuickSourceActivity). */
     private void openSourcePanel() {
+        if (sourcePanelHost != null) {
+            // The panel switches the input inside the TV window, so open that window first and the panel over it
+            // once it is up. Two plain starts: startActivities() would create only the top one.
+            Intent host = new Intent(Intent.ACTION_MAIN).addCategory("android.intent.category.TV_HOME")
+                    .setComponent(sourcePanelHost).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                startActivity(host);
+                handler.postDelayed(this::startSourcePanel, 800);
+                return;
+            } catch (ActivityNotFoundException | SecurityException e) {
+                // no TV window: the panel alone, as before
+            }
+        }
+        startSourcePanel();
+    }
+
+    private void startSourcePanel() {
         Intent i = new Intent(sourcePanelAction);
         ComponentName c = ComponentName.unflattenFromString(sourcePanelService);
         if (c != null) i.setComponent(c);

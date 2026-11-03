@@ -74,6 +74,9 @@ final class Config {
     boolean dockBand = true;
     /** pill_icons: false leaves the top pills as text only (true by default). */
     boolean pillIcons = true;
+    /** source_panel_host: "package/activity" opened first (as TV_HOME) so the source panel switches inside its
+     *  picture; CVTE's picker changes the input only over its own TV window. Empty for none. */
+    String sourcePanelHost = "";
 
     /**
      * force_locale from the theme ("en"), or "" to follow the TV. Read before the activity has resources, so it
@@ -592,6 +595,7 @@ final class Config {
             cfg.appCardIcons = bool(json, "app_card_icons", true);
             cfg.dockBand = bool(json, "dock_band", true);
             cfg.pillIcons = bool(json, "pill_icons", true);
+            cfg.sourcePanelHost = string(json, "source_panel_host", "");
         }
         return cfg;
     }
