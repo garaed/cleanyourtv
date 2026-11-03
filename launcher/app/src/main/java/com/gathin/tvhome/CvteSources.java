@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.DisplayMetrics;
 import android.util.Log;
 
 import java.lang.reflect.Proxy;
@@ -18,7 +17,7 @@ import java.util.Locale;
  * Ergo fork (theme key cvte_sources): inputs on CVTE boards whose sources live in CVTE's TV API, not in
  * TvInputManager (Ergo 32, HiSilicon Hi3751V350). The API is the firmware's shared library cn.cvte.tv.api,
  * reached by reflection so the launcher still builds and runs anywhere else. Switching does what the stock
- * Barnard launcher does: set the source through the API, then ask CVTE's TifReceiver to bring up its TV window
+ * Barnard launcher does: set the source through the API, then bring up CVTE's TV window (TvSettingActivity)
  * on that source, so the picture comes straight up with no source panel in between.
  */
 final class CvteSources {
@@ -171,21 +170,20 @@ final class CvteSources {
         return true;
     }
 
-    /** What Barnard sends after a switch: CVTE's TifReceiver opens the TV window full screen on the source. */
+    /**
+     * Brings up CVTE's TV window on the source just set, as Barnard's "go to TV" does: TvSettingActivity as TV_HOME
+     * with isLauncherGoToTv. (TifReceiver, which Barnard also uses, did nothing when sent from this app.)
+     */
     private static void tune(Context ctx, int sourceId) {
-        DisplayMetrics dm = ctx.getResources().getDisplayMetrics();
-        Intent i = new Intent("com.cvte.intent.ACTION_TUNE_SOURCE_OR_CHANNEL")
-                .addCategory("com.cvte.intent.CATEGORY_TUNE_SOURCE_OR_CHANNEL")
-                .setClassName("com.cvte.tv.api.impl", "com.cvte.tv.api.tif.TifReceiver")
-                .putExtra("sourceId", sourceId)
-                .putExtra("left", 0).putExtra("top", 0)
-                .putExtra("width", dm.widthPixels).putExtra("height", dm.heightPixels)
-                .putExtra("toPackage", "com.cvte.tv.setting")
-                .putExtra("toActivity", "com.cvte.tv.setting.TvSettingActivity")
-                .putExtra("toAction", Intent.ACTION_MAIN)
-                .putExtra("toCategory1", "android.intent.category.TV_HOME")
-                .putExtra("isFromGlobalInput", false)
-                .addFlags(Intent.FLAG_RECEIVER_FOREGROUND | Intent.FLAG_ACTIVITY_NEW_TASK);
-        ctx.sendBroadcast(i);
+        Intent i = new Intent(Intent.ACTION_MAIN)
+                .addCategory("android.intent.category.TV_HOME")
+                .setClassName("com.cvte.tv.setting", "com.cvte.tv.setting.TvSettingActivity")
+                .putExtra("isLauncherGoToTv", true)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            ctx.startActivity(i);
+        } catch (RuntimeException e) {
+            Log.w(TAG, "no TV window for source " + sourceId + ": " + e);
+        }
     }
 }
