@@ -3081,7 +3081,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             for (CvteSources.Source s : cvte) {
                 int icon = "HDMI".equals(s.category) ? R.drawable.ic_input : R.drawable.ic_av;
                 addInputRow(rows, popup, icon, s.label, -1, () -> {
-                    if (!CvteSources.open(this, s)) openSourcePanel();
+                    boolean sent = CvteSources.open(s, () -> {
+                        try {
+                            startActivity(CvteSources.tvWindow());
+                        } catch (ActivityNotFoundException | SecurityException e) {
+                            Toast.makeText(this, R.string.not_available, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    if (!sent) openSourcePanel();
                 });
             }
         }

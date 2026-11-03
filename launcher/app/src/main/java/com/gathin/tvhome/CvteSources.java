@@ -153,37 +153,33 @@ final class CvteSources {
         return cached;
     }
 
-    /** Switches to the source and brings up CVTE's TV window on it; false when the API is not there. */
-    static boolean open(Context ctx, Source s) {
+    /**
+     * Switches to the source on a worker thread, then runs {@code after} on the main thread to bring up the TV
+     * window; false when the API is not there. The caller starts the window from its own activity: started from the
+     * application context it never came up on the Ergo 32, while the same intent from Home or the shell did.
+     */
+    static boolean open(Source s, Runnable after) {
         if (sourceApi == null) return false;
-        Context app = ctx.getApplicationContext();
         Handler main = new Handler(Looper.getMainLooper());
         new Thread(() -> {
             try {
                 Class<?> src = Class.forName("com.cvte.tv.api.aidl.ITVApiSystemInputSourceAidl");
                 src.getMethod("eventSystemInputSourceSetInputSource", int.class).invoke(sourceApi, s.id);
+                Log.i(TAG, "switched to " + s.id + " (" + s.label + ")");
             } catch (Throwable t) {
                 Log.w(TAG, "switch to " + s.id + " failed: " + t);
             }
-            main.post(() -> tune(app, s.id));
+            main.post(after);
         }, "cvte-switch").start();
         return true;
     }
 
-    /**
-     * Brings up CVTE's TV window on the source just set, as Barnard's "go to TV" does: TvSettingActivity as TV_HOME
-     * with isLauncherGoToTv. (TifReceiver, which Barnard also uses, did nothing when sent from this app.)
-     */
-    private static void tune(Context ctx, int sourceId) {
-        Intent i = new Intent(Intent.ACTION_MAIN)
+    /** CVTE's TV window on the current source, as Barnard's "go to TV": TvSettingActivity as TV_HOME. */
+    static Intent tvWindow() {
+        return new Intent(Intent.ACTION_MAIN)
                 .addCategory("android.intent.category.TV_HOME")
                 .setClassName("com.cvte.tv.setting", "com.cvte.tv.setting.TvSettingActivity")
                 .putExtra("isLauncherGoToTv", true)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        try {
-            ctx.startActivity(i);
-        } catch (RuntimeException e) {
-            Log.w(TAG, "no TV window for source " + sourceId + ": " + e);
-        }
     }
 }
