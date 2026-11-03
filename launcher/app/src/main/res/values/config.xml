@@ -13,6 +13,8 @@
         <item>com.xiaomi.mitv.settings/com.xiaomi.mitv.settings.entry.MainActivity</item>
         <item>com.tcl.settings/com.tcl.settings.ui.MainActivity</item>
         <item>com.amazon.tv.launcher/com.amazon.tv.launcher.ui.MainSettingsActivity</item>
+        <!-- Ergo fork: CVTE "Yug" boards (Ergo 32, Hi3751V350) ship their own settings app and no Android one. -->
+        <item>com.yug.tv.settings/com.cvte.tv.settings.activity.SettingsActivity</item>
     </string-array>
 
     <!-- Apps pinned to the dock row at the bottom, in this order. Missing apps are skipped. -->
